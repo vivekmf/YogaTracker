@@ -12,11 +12,16 @@ struct PoseOverlayView: View {
     @ObservedObject var poseDetectionViewModel: PoseDetectionViewModel
     @State private var deviceOrientation: UIDeviceOrientation = .portrait
     @State private var isMirrored: Bool = true
-
-    private let colors: [Color] = [
+    
+    private let keypointColors: [Color] = [
         .red, .green, .blue, .cyan, .yellow, .pink.opacity(0.5),
         .orange, .purple, .pink, .gray, .black, .white,
         .indigo, .teal, .brown, .mint, .yellow.opacity(0.5), .green.opacity(0.5)
+    ]
+    
+    private let connectionColors: [Color] = [
+        .red, .green, .blue, .cyan, .yellow, .purple, .orange,
+        .pink, .gray, .black, .white, .indigo, .teal, .brown
     ]
     
     private let connections: [(VNHumanBodyPoseObservation.JointName, VNHumanBodyPoseObservation.JointName)] = [
@@ -28,19 +33,19 @@ struct PoseOverlayView: View {
         (.nose, .rightEye), (.nose, .leftEar), (.nose, .rightEar), (.neck, .leftShoulder),
         (.neck, .rightShoulder), (.neck, .nose)
     ]
-
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Draw keypoints with labels
+                // Draw keypoints with colors
                 ForEach(poseDetectionViewModel.joints.keys.sorted { $0.rawValue.rawValue < $1.rawValue.rawValue }, id: \.self) { joint in
                     if let point = poseDetectionViewModel.joints[joint] {
                         let adjustedPoint = self.adjustedPosition(for: point, in: geometry.size)
-                        Text(joint.rawValue.rawValue)
-                            .foregroundColor(.white)
-                            .position(adjustedPoint)
+//                        Text(joint.rawValue.rawValue)
+//                            .foregroundColor(.white)
+//                            .position(adjustedPoint)
                         Circle()
-                            .fill(colors.randomElement() ?? .white)
+                            .fill(keypointColors.randomElement() ?? .white)
                             .frame(width: 10, height: 10)
                             .position(adjustedPoint)
                     }
@@ -56,8 +61,32 @@ struct PoseOverlayView: View {
                             path.move(to: adjustedStart)
                             path.addLine(to: adjustedEnd)
                         }
-                        .stroke(colors[index % colors.count], lineWidth: 2)
+                        .stroke(connectionColors[index % connectionColors.count], lineWidth: 2)
                     }
+                }
+                
+                // Display exercise data: exercise name and count
+                VStack {
+                    HStack {
+                        Text("Exercise: \(poseDetectionViewModel.exerciseName)")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(10)
+                        
+                        Spacer()
+                        
+                        Text("Count: \(poseDetectionViewModel.exerciseCount)")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(10)
+                    }
+                    .padding()
+                    
+                    Spacer()
                 }
             }
             .onAppear {

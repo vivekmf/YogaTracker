@@ -11,10 +11,12 @@ import Vision
 
 class PoseDetectionViewModel: ObservableObject {
     @Published var joints: [VNHumanBodyPoseObservation.JointName: CGPoint] = [:]
-    @Published var movementHistory: [VNHumanBodyPoseObservation.JointName: [CGPoint]] = [:]
+    @Published var exerciseName: String = "Squat"  // Example default exercise
+    @Published var exerciseCount: Int = 0  // Count of completed repetitions
     
+    private var inBottomPosition: Bool = false  // Tracks if user is in the bottom squat position
     private var sequenceRequestHandler = VNSequenceRequestHandler()
-    
+
     func processFrame(_ pixelBuffer: CVPixelBuffer) {
         let request = VNDetectHumanBodyPoseRequest(completionHandler: handlePoseDetection)
         
@@ -46,59 +48,35 @@ class PoseDetectionViewModel: ObservableObject {
             if let recognizedPoint = try? observation.recognizedPoint(jointName),
                recognizedPoint.confidence > 0.1 {
                 detectedJoints[jointName] = CGPoint(x: recognizedPoint.location.x, y: 1 - recognizedPoint.location.y)
-                
-                // Store the joint movement history for tracking over time
-                if movementHistory[jointName] != nil {
-                    movementHistory[jointName]?.append(CGPoint(x: recognizedPoint.location.x, y: 1 - recognizedPoint.location.y))
-                } else {
-                    movementHistory[jointName] = [CGPoint(x: recognizedPoint.location.x, y: 1 - recognizedPoint.location.y)]
-                }
             }
         }
         
         DispatchQueue.main.async {
             self.joints = detectedJoints
-            self.checkForExercisePatterns()
+            self.checkSquatForm()
         }
     }
     
-    // Example: Check for specific exercise patterns (can be expanded for multiple exercises)
-    private func checkForExercisePatterns() {
-        checkSquatForm()
-        checkArmRaise()
-        // Add more exercises here
+    func setExercise(_ name: String, instructions: [String]) {
+        exerciseName = name
+        exerciseCount = 0  // Reset count
+        // Display instructions to the user if needed
     }
     
     private func checkSquatForm() {
-        guard let leftKnee = joints[.leftKnee],
-              let rightKnee = joints[.rightKnee],
-              let leftHip = joints[.leftHip],
+        guard let leftHip = joints[.leftHip],
               let rightHip = joints[.rightHip],
-              let leftAnkle = joints[.leftAnkle],
-              let rightAnkle = joints[.rightAnkle] else {
-            return
-        }
+              let leftKnee = joints[.leftKnee],
+              let rightKnee = joints[.rightKnee] else { return }
         
-        // Example: Check for squat position based on joint angles or relative positions
-        let hipKneeDiffY = abs(leftHip.y - leftKnee.y)
-        let kneeAnkleDiffY = abs(leftKnee.y - leftAnkle.y)
+        let hipY = (leftHip.y + rightHip.y) / 2
+        let kneeY = (leftKnee.y + rightKnee.y) / 2
         
-        if hipKneeDiffY > kneeAnkleDiffY {
-            print("Squat detected!")
-        }
-    }
-    
-    private func checkArmRaise() {
-        guard let leftShoulder = joints[.leftShoulder],
-              let rightShoulder = joints[.rightShoulder],
-              let leftWrist = joints[.leftWrist],
-              let rightWrist = joints[.rightWrist] else {
-            return
-        }
-        
-        // Example: Detect if arms are raised above shoulders
-        if leftWrist.y < leftShoulder.y && rightWrist.y < rightShoulder.y {
-            print("Arms raised!")
+        if kneeY < hipY && !inBottomPosition {
+            inBottomPosition = true
+        } else if kneeY > hipY && inBottomPosition {
+            inBottomPosition = false
+            exerciseCount += 1
         }
     }
 }
