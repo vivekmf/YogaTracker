@@ -11,12 +11,12 @@ import Vision
 
 class PoseDetectionViewModel: ObservableObject {
     @Published var joints: [VNHumanBodyPoseObservation.JointName: CGPoint] = [:]
-    @Published var exerciseName: String = "Squat"  // Example default exercise
-    @Published var exerciseCount: Int = 0  // Count of completed repetitions
+    @Published var exerciseName: String = "Squat"
+    @Published var exerciseCount: Int = 0
     
-    private var inBottomPosition: Bool = false  // Tracks if user is in the bottom squat position
+    private var inBottomPosition: Bool = false
     private var sequenceRequestHandler = VNSequenceRequestHandler()
-
+    
     func processFrame(_ pixelBuffer: CVPixelBuffer) {
         let request = VNDetectHumanBodyPoseRequest(completionHandler: handlePoseDetection)
         
