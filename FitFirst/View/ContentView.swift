@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AVFoundation
+import Vision
 
 struct ContentView: View {
     @StateObject private var poseDetectionViewModel = PoseDetectionViewModel()
@@ -28,7 +29,6 @@ struct ContentView: View {
                 HStack {
                     // Custom back button
                     Button(action: {
-                        // Dismiss the current view
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Image(systemName: "chevron.left")

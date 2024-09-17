@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct HomepageView: View {
+struct HomePageView: View {
     @State private var progress: CGFloat = 0.0
     @State private var percentage: Int = 0
     

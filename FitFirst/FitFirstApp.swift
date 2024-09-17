@@ -11,7 +11,7 @@ import SwiftUI
 struct FitFirstApp: App {
     var body: some Scene {
         WindowGroup {
-            HomepageView()
+            HomePageView()
         }
     }
 }

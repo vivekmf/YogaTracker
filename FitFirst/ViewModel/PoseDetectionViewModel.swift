@@ -67,16 +67,24 @@ class PoseDetectionViewModel: ObservableObject {
         guard let leftHip = joints[.leftHip],
               let rightHip = joints[.rightHip],
               let leftKnee = joints[.leftKnee],
-              let rightKnee = joints[.rightKnee] else { return }
+              let rightKnee = joints[.rightKnee],
+              let leftAnkle = joints[.leftAnkle],
+              let rightAnkle = joints[.rightAnkle] else { return }
         
         let hipY = (leftHip.y + rightHip.y) / 2
         let kneeY = (leftKnee.y + rightKnee.y) / 2
         
-        if kneeY < hipY && !inBottomPosition {
-            inBottomPosition = true
-        } else if kneeY > hipY && inBottomPosition {
-            inBottomPosition = false
-            exerciseCount += 1
+        //Checking Leg is not Crossed
+        if (leftKnee.x) > (rightKnee.x) && (leftAnkle.x) > (rightAnkle.x) {
+            if kneeY < hipY && !inBottomPosition {
+                inBottomPosition = true
+            } else if kneeY > hipY && inBottomPosition {
+                inBottomPosition = false
+                exerciseCount += 1
+            }
+        }else{
+            print("Legs Should not be crossed with each other. It should be saparated and in a straight line.")
         }
     }
+
 }

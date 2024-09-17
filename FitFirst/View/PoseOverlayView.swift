@@ -76,6 +76,7 @@ struct PoseOverlayView: View {
                         .bold()
                         .foregroundColor(.white)
                         .transition(.opacity)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
                         .onAppear(perform: startCountdown)
                 } else {
                     VStack {
