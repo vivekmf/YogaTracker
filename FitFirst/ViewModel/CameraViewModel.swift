@@ -43,17 +43,29 @@ class CameraViewModel: NSObject, ObservableObject {
             self?.captureSession.startRunning()
         }
     }
-    
+
     func startCameraSession() {
         if !captureSession.isRunning {
+            // Disable screen locking
+            UIApplication.shared.isIdleTimerDisabled = true
+            
+            // Set brightness to maximum or your desired level
+            UIScreen.main.brightness = 1.0 // Maximum brightness
+
             DispatchQueue.global(qos: .userInitiated).async {
                 self.captureSession.startRunning()
             }
         }
     }
-    
+
     func stopCameraSession() {
         if captureSession.isRunning {
+            // Re-enable screen locking
+            UIApplication.shared.isIdleTimerDisabled = false
+            
+            // Optionally reset the brightness to the previous level
+            UIScreen.main.brightness = CGFloat(0.5) // Set it back to a desired default value
+
             DispatchQueue.global(qos: .userInitiated).async {
                 self.captureSession.stopRunning()
             }

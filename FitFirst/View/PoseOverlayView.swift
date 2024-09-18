@@ -5,11 +5,15 @@
 //  Created by Vivek Singh on 20/08/24.
 //
 
+import Foundation
 import SwiftUI
 import Vision
+import SwiftData
 
 struct PoseOverlayView: View {
     @ObservedObject var poseDetectionViewModel: PoseDetectionViewModel
+    @Environment(\.modelContext) private var modelContext
+    
     @State private var deviceOrientation: UIDeviceOrientation = .portrait
     @State private var isMirrored: Bool = true
     @State private var timeElapsed: Int = 0
@@ -82,7 +86,6 @@ struct PoseOverlayView: View {
                     VStack {
                         // Exercise name, count, and calories
                         HStack {
-                            
                             Spacer()
                             
                             Text("\(poseDetectionViewModel.exerciseName) Count: \(poseDetectionViewModel.exerciseCount)")
@@ -126,6 +129,7 @@ struct PoseOverlayView: View {
             .onDisappear {
                 NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
                 self.stopTimer()
+                self.saveWorkoutRecord()
             }
             .background(Color.black.opacity(0.5))
         }
@@ -177,4 +181,23 @@ struct PoseOverlayView: View {
         
         return position
     }
+    
+    private func saveWorkoutRecord() {
+         let workoutRecord = WorkoutRecord(
+             exerciseName: poseDetectionViewModel.exerciseName,
+             date: Date(),
+             reps: poseDetectionViewModel.exerciseCount,
+             duration: Double(timeElapsed),
+             caloriesBurned: caloriesBurned,
+             intensity: intensity
+         )
+         
+         // Save to SwiftData
+         modelContext.insert(workoutRecord)
+         do {
+             try modelContext.save()
+         } catch {
+             print("Error saving workout record: \(error.localizedDescription)")
+         }
+     }
 }

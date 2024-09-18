@@ -6,12 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct FitFirstApp: App {
+    @State private var container = try! ModelContainer(for: WorkoutRecord.self)
+    
     var body: some Scene {
         WindowGroup {
             HomePageView()
+                .modelContainer(container)
         }
     }
 }
