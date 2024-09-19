@@ -10,7 +10,6 @@ import SwiftData
 
 @Model
 class UserProfile {
-    // Properties
     @Attribute(.unique) var id: UUID
     var name: String
     var age: Int {
@@ -23,9 +22,9 @@ class UserProfile {
     var height: Double
     var email: String
     var phoneNumber: String
-    var dateOfBirth: Date // Store date of birth
-    var profilePicture: Data? // Optional data to store the profile picture
-    
+    var dateOfBirth: Date
+    var profilePicture: Data?
+
     // Initializer
     init(
         id: UUID = UUID(),
@@ -36,7 +35,7 @@ class UserProfile {
         height: Double,
         email: String,
         phoneNumber: String,
-        profilePicture: Data? = nil // Default value is nil
+        profilePicture: Data? = nil
     ) {
         self.id = id
         self.name = name

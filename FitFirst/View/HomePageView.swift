@@ -11,66 +11,75 @@ import SwiftData
 struct HomePageView: View {
     @State private var progress: CGFloat = 0.0
     @State private var percentage: Int = 0
-
+    
     // Fetching the user profile
     @Query private var userProfiles: [UserProfile]
     
     // Fetching the workout records
     @Query(sort: \WorkoutRecord.date, order: .reverse) var workoutRecords: [WorkoutRecord]
-
+    
     var body: some View {
-          NavigationView {
-              ScrollView {
-                  VStack(alignment: .leading) {
-                      if let userProfile = userProfiles.first {
-                          HStack {
-                              VStack(alignment: .leading, spacing: 5) {
-                                  Text("Welcome back 👋")
-                                      .font(.system(size: 20, weight: .medium, design: .rounded))
-                                      .foregroundColor(.gray)
-                                  
-                                  Text(userProfile.name)
-                                      .font(.system(size: 28, weight: .bold, design: .rounded))
-                                      .foregroundColor(.black)
-                              }
-                              
-                              Spacer()
-                              
-                              NavigationLink(destination: ProfilePageView()) {
-                                  Image("user_profile_picture")
-                                      .resizable()
-                                      .frame(width: 60, height: 60)
-                                      .clipShape(Circle())
-                              }
-                          }
-                          .padding(.horizontal)
-                          .padding(.top, 20)
-                      } else {
-                          HStack() {
-                              VStack(alignment: .leading, spacing: 5) {
-                                  Text("Welcome back 👋")
-                                      .font(.system(size: 20, weight: .medium, design: .rounded))
-                                      .foregroundColor(.gray)
-                                  
-                                  Text("Guest")
-                                      .font(.system(size: 28, weight: .bold, design: .rounded))
-                                      .foregroundColor(.black)
-                              }
-                              
-                              Spacer()
-                              
-                              NavigationLink(destination: EditProfilePageView(userProfile: UserProfile(name: "", dateOfBirth: Date(), sex: "", weight: 0.0, height: 0.0, email: "", phoneNumber: ""))) {
-                                  Image("user_profile_picture")
-                                      .resizable()
-                                      .frame(width: 60, height: 60)
-                                      .clipShape(Circle())
-                                  
-                              }
-                          }
-                          .padding(.horizontal)
-                          .padding(.top, 20)
-                      }
-
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading) {
+                    // Display user info or guest placeholder
+                    HStack {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Welcome back 👋")
+                                .font(.system(size: 20, weight: .medium, design: .rounded))
+                                .foregroundColor(.gray)
+                            
+                            // Check if there's a user profile and display their name
+                            if let userProfile = userProfiles.first {
+                                Text(userProfile.name)
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundColor(.black)
+                            } else {
+                                // Show 'Guest' if no user profile is found
+                                Text("Guest")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundColor(.black)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // Navigate to ProfilePageView if user data is available, otherwise to EditProfilePageView
+                        NavigationLink(
+                            destination: {
+                                if let userProfile = userProfiles.first {
+                                    ProfilePageView()
+                                } else {
+                                    EditProfilePageView(userProfile: .constant(UserProfile(
+                                        name: "", dateOfBirth: Date(), sex: "", weight: 0.0, height: 0.0, email: "", phoneNumber: "")))
+                                }
+                            }
+                        ) {
+                            if let userProfile = userProfiles.first {
+                                if let imageData = userProfile.profilePicture, let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .frame(width: 60, height: 60)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.green, lineWidth: 1))
+                                        .shadow(color: .green.opacity(0.8), radius: 6)
+                                } else {
+                                    Image(systemName: "person.crop.circle")
+                                        .resizable()
+                                        .frame(width: 60, height: 60)
+                                        .clipShape(Circle())
+                                }
+                            } else {
+                                Image(systemName: "person.crop.circle")
+                                    .resizable()
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(Circle())
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 20)
+                    
                     // Check if workout records are available
                     if let latestWorkout = workoutRecords.first {
                         // Progress Card
@@ -248,10 +257,10 @@ struct HomePageView: View {
         let steps = Int(progressPercentage * 100)
         let stepDuration = animationDuration / Double(steps)
         
-        for step in 0...steps {
+        for step in 0..<steps {
             DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(step)) {
-                percentage = step
-                progress = CGFloat(step) / 100.0
+                self.percentage = step + 1
+                self.progress = progressPercentage * CGFloat(self.percentage) / 100.0
             }
         }
     }

@@ -10,7 +10,7 @@ import SwiftData
 
 @main
 struct FitFirstApp: App {
-    @State private var container = try! ModelContainer(for: WorkoutRecord.self)
+    @State private var container = try! ModelContainer(for: WorkoutRecord.self, UserProfile.self)
     
     var body: some Scene {
         WindowGroup {
