@@ -29,7 +29,7 @@ struct EditProfilePageView: View {
         NavigationView {
             Form {
                 // Profile Picture Section
-                Section(header: Text("Profile Picture").font(.headline).foregroundColor(.green)) {
+                Section(header: Text("Profile Picture").font(.headline).foregroundColor(.gray)) {
                     HStack {
                         Spacer()
                         VStack {
@@ -39,8 +39,8 @@ struct EditProfilePageView: View {
                                     .scaledToFill()
                                     .frame(width: 100, height: 100)
                                     .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.green, lineWidth: 3))
-                                    .shadow(color: .green, radius: 10)
+                                    .overlay(Circle().stroke(Color.green.opacity(0.6), lineWidth: 3))
+                                    .shadow(color: .green.opacity(0.4), radius: 10)
                             } else if let imageData = userProfile.profilePicture,
                                       let image = UIImage(data: imageData) {
                                 Image(uiImage: image)
@@ -48,8 +48,8 @@ struct EditProfilePageView: View {
                                     .scaledToFill()
                                     .frame(width: 100, height: 100)
                                     .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.green, lineWidth: 3))
-                                    .shadow(color: .green, radius: 10)
+                                    .overlay(Circle().stroke(Color.green.opacity(0.6), lineWidth: 3))
+                                    .shadow(color: .green.opacity(0.4), radius: 10)
                             } else {
                                 Image(systemName: "person.crop.circle.fill")
                                     .resizable()
@@ -76,7 +76,7 @@ struct EditProfilePageView: View {
                 }
                 
                 // Basic Information Section
-                Section(header: Text("Basic Information").font(.headline).foregroundColor(.green)) {
+                Section(header: Text("Basic Information").font(.headline).foregroundColor(.gray)) {
                     HStack {
                         Image(systemName: "person.fill")
                             .foregroundColor(.gray)
@@ -133,7 +133,7 @@ struct EditProfilePageView: View {
                 }
                 
                 // Physical Information Section
-                Section(header: Text("Physical Information").font(.headline).foregroundColor(.green)) {
+                Section(header: Text("Physical Information").font(.headline).foregroundColor(.gray)) {
                     HStack {
                         Text("Weight (kg)")
                             .foregroundColor(.gray)

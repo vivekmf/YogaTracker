@@ -11,6 +11,7 @@ import SwiftData
 
 struct ProfilePageView: View {
     @Environment(\.modelContext) private var context: ModelContext
+    @Environment(\.presentationMode) private var presentationMode
     @State private var isEditing = false
     
     // Fetching the user profile data
@@ -75,6 +76,21 @@ struct ProfilePageView: View {
                     }
                     .listStyle(InsetGroupedListStyle())
                     .navigationBarTitle("Profile", displayMode: .inline)
+                    .navigationBarBackButtonHidden(true)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                presentationMode.wrappedValue.dismiss()
+                            }) {
+                                HStack {
+                                    Image(systemName: "chevron.left")
+                                    Text("Home")
+                                }
+                                .font(.headline)
+                                .foregroundStyle(Color.black.opacity(0.8))
+                            }
+                        }
+                    }
                     // Passing a binding using $
                     .sheet(isPresented: $isEditing) {
                         EditProfilePageView(userProfile: .constant(userProfile))
@@ -105,6 +121,7 @@ struct ProfilePageView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
