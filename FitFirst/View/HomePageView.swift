@@ -11,36 +11,66 @@ import SwiftData
 struct HomePageView: View {
     @State private var progress: CGFloat = 0.0
     @State private var percentage: Int = 0
+
+    // Fetching the user profile
+    @Query private var userProfiles: [UserProfile]
     
-    // Using @Query to fetch WorkoutRecord data
+    // Fetching the workout records
     @Query(sort: \WorkoutRecord.date, order: .reverse) var workoutRecords: [WorkoutRecord]
-    
+
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading) {
-                    // Welcome message with user information
-                    HStack {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text("Welcome back 👋")
-                                .font(.system(size: 20, weight: .medium, design: .rounded))
-                                .foregroundColor(.gray)
-                            
-                            Text("Vivek Singh")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(.black)
-                        }
-                        
-                        Spacer()
-                        
-                        Image("user_profile_picture")
-                            .resizable()
-                            .frame(width: 60, height: 60)
-                            .clipShape(Circle())
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                    
+          NavigationView {
+              ScrollView {
+                  VStack(alignment: .leading) {
+                      if let userProfile = userProfiles.first {
+                          HStack {
+                              VStack(alignment: .leading, spacing: 5) {
+                                  Text("Welcome back 👋")
+                                      .font(.system(size: 20, weight: .medium, design: .rounded))
+                                      .foregroundColor(.gray)
+                                  
+                                  Text(userProfile.name)
+                                      .font(.system(size: 28, weight: .bold, design: .rounded))
+                                      .foregroundColor(.black)
+                              }
+                              
+                              Spacer()
+                              
+                              NavigationLink(destination: ProfilePageView()) {
+                                  Image("user_profile_picture")
+                                      .resizable()
+                                      .frame(width: 60, height: 60)
+                                      .clipShape(Circle())
+                              }
+                          }
+                          .padding(.horizontal)
+                          .padding(.top, 20)
+                      } else {
+                          HStack() {
+                              VStack(alignment: .leading, spacing: 5) {
+                                  Text("Welcome back 👋")
+                                      .font(.system(size: 20, weight: .medium, design: .rounded))
+                                      .foregroundColor(.gray)
+                                  
+                                  Text("Guest")
+                                      .font(.system(size: 28, weight: .bold, design: .rounded))
+                                      .foregroundColor(.black)
+                              }
+                              
+                              Spacer()
+                              
+                              NavigationLink(destination: EditProfilePageView(userProfile: UserProfile(name: "", dateOfBirth: Date(), sex: "", weight: 0.0, height: 0.0, email: "", phoneNumber: ""))) {
+                                  Image("user_profile_picture")
+                                      .resizable()
+                                      .frame(width: 60, height: 60)
+                                      .clipShape(Circle())
+                                  
+                              }
+                          }
+                          .padding(.horizontal)
+                          .padding(.top, 20)
+                      }
+
                     // Check if workout records are available
                     if let latestWorkout = workoutRecords.first {
                         // Progress Card
