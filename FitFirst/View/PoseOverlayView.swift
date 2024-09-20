@@ -23,7 +23,8 @@ struct PoseOverlayView: View {
     @State private var timer: Timer?
     @State private var weightInKg: Double = 80.2
     @State private var intensity: Double = 3.5
-    
+    @State private var heightInMeters: Double = 1.75
+
     private let keypointColors: [Color] = [
         .red, .green, .blue, .cyan, .yellow, .pink.opacity(0.5),
         .orange, .purple, .pink, .gray, .black, .white,
@@ -125,6 +126,7 @@ struct PoseOverlayView: View {
             }
             .onAppear {
                 self.setupOrientationObserver()
+                self.fetchUserProfile()
             }
             .onDisappear {
                 NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
@@ -132,6 +134,18 @@ struct PoseOverlayView: View {
                 self.saveWorkoutRecord()
             }
             .background(Color.black.opacity(0.5))
+        }
+    }
+    
+    private func fetchUserProfile() {
+        let fetchRequest = FetchDescriptor<UserProfile>()
+        do {
+            if let userProfile = try modelContext.fetch(fetchRequest).first {
+                self.weightInKg = userProfile.weight
+                self.heightInMeters = userProfile.height / 100.0
+            }
+        } catch {
+            print("Error fetching UserProfile: \(error)")
         }
     }
     
@@ -183,21 +197,21 @@ struct PoseOverlayView: View {
     }
     
     private func saveWorkoutRecord() {
-         let workoutRecord = WorkoutRecord(
-             exerciseName: poseDetectionViewModel.exerciseName,
-             date: Date(),
-             reps: poseDetectionViewModel.exerciseCount,
-             duration: Double(timeElapsed),
-             caloriesBurned: caloriesBurned,
-             intensity: intensity
-         )
-         
-         // Save to SwiftData
-         modelContext.insert(workoutRecord)
-         do {
-             try modelContext.save()
-         } catch {
-             print("Error saving workout record: \(error.localizedDescription)")
-         }
-     }
+        let workoutRecord = WorkoutRecord(
+            exerciseName: poseDetectionViewModel.exerciseName,
+            date: Date(),
+            reps: poseDetectionViewModel.exerciseCount,
+            duration: Double(timeElapsed),
+            caloriesBurned: caloriesBurned,
+            intensity: intensity
+        )
+        
+        // Save to SwiftData
+        modelContext.insert(workoutRecord)
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error saving workout record: \(error.localizedDescription)")
+        }
+    }
 }

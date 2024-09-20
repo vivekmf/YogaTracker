@@ -8,15 +8,18 @@
 import Foundation
 import SwiftUI
 import Vision
+import CoreGraphics
 
 class PoseDetectionViewModel: ObservableObject {
     @Published var joints: [VNHumanBodyPoseObservation.JointName: CGPoint] = [:]
     @Published var exerciseName: String = "Squat"
     @Published var exerciseCount: Int = 0
+    @Published var estimatedHeight: Double = 0.0  // Publish height to UI
     
     private var inBottomPosition: Bool = false
     private var sequenceRequestHandler = VNSequenceRequestHandler()
     
+    // Process frame to detect human pose
     func processFrame(_ pixelBuffer: CVPixelBuffer) {
         let request = VNDetectHumanBodyPoseRequest(completionHandler: handlePoseDetection)
         
@@ -27,6 +30,7 @@ class PoseDetectionViewModel: ObservableObject {
         }
     }
     
+    // Handle pose detection results
     private func handlePoseDetection(request: VNRequest, error: Error?) {
         guard let observations = request.results as? [VNHumanBodyPoseObservation] else { return }
         
@@ -35,6 +39,7 @@ class PoseDetectionViewModel: ObservableObject {
         }
     }
     
+    // Process detected observation and extract joint data
     private func processObservation(_ observation: VNHumanBodyPoseObservation) {
         var detectedJoints: [VNHumanBodyPoseObservation.JointName: CGPoint] = [:]
         let allJoints: [VNHumanBodyPoseObservation.JointName] = [
@@ -54,15 +59,11 @@ class PoseDetectionViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.joints = detectedJoints
             self.checkSquatForm()
+            self.calculateBodyHeight() // Calculate height
         }
     }
     
-    func setExercise(_ name: String, instructions: [String]) {
-        exerciseName = name
-        exerciseCount = 0  // Reset count
-        // Display instructions to the user if needed
-    }
-    
+    // Check squat form and track exercise count
     private func checkSquatForm() {
         guard let leftHip = joints[.leftHip],
               let rightHip = joints[.rightHip],
@@ -74,17 +75,42 @@ class PoseDetectionViewModel: ObservableObject {
         let hipY = (leftHip.y + rightHip.y) / 2
         let kneeY = (leftKnee.y + rightKnee.y) / 2
         
-        //Checking Leg is not Crossed
-        if (leftKnee.x) > (rightKnee.x) && (leftAnkle.x) > (rightAnkle.x) {
+        // Checking legs are not crossed
+        if (leftKnee.x > rightKnee.x) && (leftAnkle.x > rightAnkle.x) {
             if kneeY < hipY && !inBottomPosition {
                 inBottomPosition = true
             } else if kneeY > hipY && inBottomPosition {
                 inBottomPosition = false
                 exerciseCount += 1
             }
-        }else{
-            print("Legs Should not be crossed with each other. It should be saparated and in a straight line.")
+        } else {
+            print("Legs should not be crossed with each other. They should be separated and in a straight line.")
         }
     }
 
+    // Calculate height of the person using head and ankle joints
+    private func calculateBodyHeight() {
+        guard let nose = joints[.nose],  // Head joint (e.g., nose)
+              let leftAnkle = joints[.leftAnkle],  // Foot joint (e.g., left ankle)
+              let rightAnkle = joints[.rightAnkle] else {
+            return
+        }
+        
+        // Average the ankle points to get a more accurate foot position
+        let footY = (leftAnkle.y + rightAnkle.y) / 2
+        
+        // Calculate vertical distance between nose and foot in normalized space
+        let normalizedHeight = footY - nose.y
+        
+        // Convert normalized height to estimated real-world height using an assumed scaling factor
+        // Assuming the frame captures the person standing at a distance where 1.0 normalized height = 1.75 meters
+        let scalingFactor = 1.75 // Adjust this based on camera calibration and real-world setup
+        let realWorldHeight = normalizedHeight * scalingFactor
+        
+        print("Height Estimation: \(realWorldHeight)")
+        
+        DispatchQueue.main.async {
+            self.estimatedHeight = realWorldHeight
+        }
+    }
 }
